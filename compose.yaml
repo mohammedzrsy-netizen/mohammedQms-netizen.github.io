@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: meeza_qms
+      POSTGRES_USER: meeza
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_local_password}
+    volumes:
+      - qms_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meeza -d meeza_qms"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+volumes:
+  qms_db_data:
